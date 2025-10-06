@@ -6,13 +6,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/integrations/supabase/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 export default function Upload() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
+  const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -34,7 +40,16 @@ export default function Upload() {
     setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
+    if (!user) {
+      toast({
+        title: "Kirish talab qilinadi",
+        description: "Rasm joylash uchun tizimga kiring",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!selectedImage) {
       toast({
         title: "Xatolik",
@@ -53,16 +68,94 @@ export default function Upload() {
       return;
     }
 
-    // Backend integration will be added here
-    toast({
-      title: "Muvaffaqiyatli!",
-      description: "Rasm muvaffaqiyatli joylashtirildi",
-    });
+    setUploading(true);
 
-    // Reset form
-    setSelectedImage(null);
-    setPreviewUrl("");
-    setTags([]);
+    try {
+      // Upload image to storage
+      const fileExt = selectedImage.name.split('.').pop();
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('images')
+        .upload(fileName, selectedImage);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('images')
+        .getPublicUrl(fileName);
+
+      // Create image record
+      const { data: imageData, error: imageError } = await supabase
+        .from('images')
+        .insert({
+          user_id: user.id,
+          title: selectedImage.name.replace(/\.[^/.]+$/, ""),
+          image_url: publicUrl,
+          storage_path: fileName,
+        })
+        .select()
+        .single();
+
+      if (imageError) throw imageError;
+
+      // Handle tags
+      for (const tagName of tags) {
+        // Check if tag exists
+        let { data: existingTag } = await supabase
+          .from('tags')
+          .select('id')
+          .eq('name', tagName.toLowerCase())
+          .maybeSingle();
+
+        let tagId: string;
+
+        if (existingTag) {
+          tagId = existingTag.id;
+        } else {
+          // Create new tag
+          const { data: newTag, error: tagError } = await supabase
+            .from('tags')
+            .insert({ name: tagName.toLowerCase() })
+            .select()
+            .single();
+
+          if (tagError) throw tagError;
+          tagId = newTag.id;
+        }
+
+        // Link tag to image
+        await supabase
+          .from('image_tags')
+          .insert({
+            image_id: imageData.id,
+            tag_id: tagId,
+          });
+      }
+
+      toast({
+        title: "Muvaffaqiyatli!",
+        description: "Rasm muvaffaqiyatli joylashtirildi",
+      });
+
+      // Reset form
+      setSelectedImage(null);
+      setPreviewUrl("");
+      setTags([]);
+
+      // Navigate to gallery
+      navigate('/gallery');
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast({
+        title: "Xatolik",
+        description: "Rasm joylashtirish amalga oshmadi",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -185,9 +278,10 @@ export default function Upload() {
             size="lg"
             className="w-full gradient-primary transition-smooth hover:shadow-hover"
             onClick={handleUpload}
+            disabled={uploading || !user}
           >
             <UploadIcon className="mr-2 h-5 w-5" />
-            Joylash
+            {uploading ? "Yuklanmoqda..." : "Joylash"}
           </Button>
         </div>
       </div>

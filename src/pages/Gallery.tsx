@@ -1,76 +1,85 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { SearchBar } from "@/components/SearchBar";
 import { ImageCard } from "@/components/ImageCard";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/integrations/supabase/hooks/useAuth";
+import { Skeleton } from "@/components/ui/skeleton";
 
-// Mock data - keyinchalik backend bilan almashtiriladi
-const mockImages = [
-  {
-    id: "1",
-    imageUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop",
-    author: "Ali Valiyev",
-    tags: ["AI", "art", "digital"],
-    comments: [
-      { author: "Sardor", text: "Ajoyib ish!" },
-      { author: "Madina", text: "Juda chiroyli!" },
-    ],
-    likes: 24,
-  },
-  {
-    id: "2",
-    imageUrl: "https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=800&auto=format&fit=crop",
-    author: "Dilnoza Karimova",
-    tags: ["nature", "landscape", "AI"],
-    comments: [{ author: "Jasur", text: "Tabiat go'zal!" }],
-    likes: 18,
-  },
-  {
-    id: "3",
-    imageUrl: "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?w=800&auto=format&fit=crop",
-    author: "Bekzod Tursunov",
-    tags: ["abstract", "colorful", "art"],
-    comments: [],
-    likes: 31,
-  },
-  {
-    id: "4",
-    imageUrl: "https://images.unsplash.com/photo-1618556450994-a6a128ef0d9d?w=800&auto=format&fit=crop",
-    author: "Nilufar Yusupova",
-    tags: ["portrait", "AI", "faces"],
-    comments: [
-      { author: "Kamol", text: "Sehr kabi!" },
-      { author: "Zarina", text: "AI qanday qilib bunchalik real yasaydi?" },
-    ],
-    likes: 42,
-  },
-  {
-    id: "5",
-    imageUrl: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=800&auto=format&fit=crop",
-    author: "Rustam Azimov",
-    tags: ["space", "cosmic", "stars"],
-    comments: [{ author: "Sherzod", text: "Koinot sirlari!" }],
-    likes: 27,
-  },
-  {
-    id: "6",
-    imageUrl: "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=800&auto=format&fit=crop",
-    author: "Malika Saidova",
-    tags: ["fantasy", "magical", "art"],
-    comments: [],
-    likes: 19,
-  },
-];
+interface Image {
+  id: string;
+  image_url: string;
+  title: string;
+  description: string | null;
+  likes_count: number;
+  user_id: string;
+  storage_path: string | null;
+  profiles: {
+    username: string;
+    full_name: string | null;
+  } | null;
+}
 
 export default function Gallery() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [images, setImages] = useState<Image[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    fetchImages();
+
+    // Real-time subscription for new images
+    const channel = supabase
+      .channel('gallery-images')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'images'
+        },
+        () => {
+          fetchImages();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const fetchImages = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('images')
+        .select(`
+          *,
+          profiles:user_id (
+            username,
+            full_name
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setImages(data || []);
+    } catch (error) {
+      console.error('Error fetching images:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredImages = useMemo(() => {
-    if (!searchQuery.trim()) return mockImages;
+    if (!searchQuery.trim()) return images;
 
     const query = searchQuery.toLowerCase().replace("#", "");
-    return mockImages.filter((image) =>
-      image.tags.some((tag) => tag.toLowerCase().includes(query))
+    return images.filter((image) =>
+      image.title?.toLowerCase().includes(query) ||
+      image.description?.toLowerCase().includes(query)
     );
-  }, [searchQuery]);
+  }, [searchQuery, images]);
 
   return (
     <div className="min-h-screen p-6">
@@ -91,10 +100,29 @@ export default function Gallery() {
           />
         </div>
 
-        {filteredImages.length > 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="space-y-4">
+                <Skeleton className="aspect-square w-full" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            ))}
+          </div>
+        ) : filteredImages.length > 0 ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filteredImages.map((image) => (
-              <ImageCard key={image.id} {...image} />
+              <ImageCard 
+                key={image.id} 
+                id={image.id}
+                imageUrl={image.image_url}
+                author={image.profiles?.username || 'Unknown'}
+                authorId={image.user_id}
+                title={image.title}
+                description={image.description}
+                likesCount={image.likes_count}
+              />
             ))}
           </div>
         ) : (
