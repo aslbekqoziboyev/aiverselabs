@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Mail, Lock, User, Sparkles } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,34 +7,79 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/integrations/supabase/hooks/useAuth";
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [registerEmail, setRegisterEmail] = useState("");
+  const [registerPassword, setRegisterPassword] = useState("");
+  const [registerUsername, setRegisterUsername] = useState("");
+  const [registerFullName, setRegisterFullName] = useState("");
+  
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { user, signIn, signUp, signInWithGoogle } = useAuth();
 
-  const handleGoogleAuth = () => {
+  useEffect(() => {
+    if (user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
+
+  const handleGoogleAuth = async () => {
     setIsLoading(true);
-    // Google OAuth integration will be added with backend
-    setTimeout(() => {
-      setIsLoading(false);
+    const { error } = await signInWithGoogle();
+    
+    if (error) {
       toast({
-        title: "Google orqali kirish",
-        description: "Backend ulanishi kerak",
+        title: "Xatolik",
+        description: error.message,
+        variant: "destructive",
       });
-    }, 1000);
+      setIsLoading(false);
+    }
   };
 
-  const handleEmailAuth = (e: React.FormEvent) => {
+  const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Email authentication will be added with backend
-    setTimeout(() => {
+    
+    const { error } = await signIn(loginEmail, loginPassword);
+    
+    if (error) {
+      toast({
+        title: "Xatolik",
+        description: error.message === "Invalid login credentials" 
+          ? "Email yoki parol noto'g'ri"
+          : error.message,
+        variant: "destructive",
+      });
       setIsLoading(false);
+    }
+  };
+
+  const handleEmailRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    const { error } = await signUp(registerEmail, registerPassword, registerUsername, registerFullName);
+    
+    if (error) {
+      toast({
+        title: "Xatolik",
+        description: error.message,
+        variant: "destructive",
+      });
+      setIsLoading(false);
+    } else {
       toast({
         title: "Muvaffaqiyatli!",
-        description: "Emailingizga tasdiqlash kodi yuborildi",
+        description: "Hisob yaratildi. Endi kirishingiz mumkin.",
       });
-    }, 1000);
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -104,7 +150,7 @@ export default function Auth() {
                   </div>
                 </div>
 
-                <form onSubmit={handleEmailAuth} className="space-y-4">
+                <form onSubmit={handleEmailLogin} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
                     <div className="relative">
@@ -114,6 +160,8 @@ export default function Auth() {
                         type="email"
                         placeholder="email@example.com"
                         className="pl-10 transition-smooth"
+                        value={loginEmail}
+                        onChange={(e) => setLoginEmail(e.target.value)}
                         required
                       />
                     </div>
@@ -128,6 +176,8 @@ export default function Auth() {
                         type="password"
                         placeholder="••••••••"
                         className="pl-10 transition-smooth"
+                        value={loginPassword}
+                        onChange={(e) => setLoginPassword(e.target.value)}
                         required
                       />
                     </div>
@@ -192,16 +242,34 @@ export default function Auth() {
                   </div>
                 </div>
 
-                <form onSubmit={handleEmailAuth} className="space-y-4">
+                <form onSubmit={handleEmailRegister} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Ism</Label>
+                    <Label htmlFor="full-name">To'liq ism</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
-                        id="name"
+                        id="full-name"
                         type="text"
-                        placeholder="Ismingiz"
+                        placeholder="Ali Valiyev"
                         className="pl-10 transition-smooth"
+                        value={registerFullName}
+                        onChange={(e) => setRegisterFullName(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="username">Foydalanuvchi nomi</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        id="username"
+                        type="text"
+                        placeholder="ali_valiyev"
+                        className="pl-10 transition-smooth"
+                        value={registerUsername}
+                        onChange={(e) => setRegisterUsername(e.target.value)}
                         required
                       />
                     </div>
@@ -216,6 +284,8 @@ export default function Auth() {
                         type="email"
                         placeholder="email@example.com"
                         className="pl-10 transition-smooth"
+                        value={registerEmail}
+                        onChange={(e) => setRegisterEmail(e.target.value)}
                         required
                       />
                     </div>
@@ -230,9 +300,15 @@ export default function Auth() {
                         type="password"
                         placeholder="••••••••"
                         className="pl-10 transition-smooth"
+                        value={registerPassword}
+                        onChange={(e) => setRegisterPassword(e.target.value)}
                         required
+                        minLength={6}
                       />
                     </div>
+                    <p className="text-xs text-muted-foreground">
+                      Kamida 6 belgidan iborat bo'lishi kerak
+                    </p>
                   </div>
 
                   <Button

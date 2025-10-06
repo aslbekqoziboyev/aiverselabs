@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Home, Upload, Sparkles, LogIn, LogOut, User, Image } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -20,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useAuth } from "@/integrations/supabase/hooks/useAuth";
 
 const menuItems = [
   { title: "Rasmlarni kuzatish", url: "/", icon: Image },
@@ -30,14 +30,14 @@ const menuItems = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userName] = useState("Foydalanuvchi");
+  const { user, signOut } = useAuth();
 
   const isActive = (path: string) => location.pathname === path;
   const isCollapsed = state === "collapsed";
+  const userName = user?.user_metadata?.full_name || user?.email || "Foydalanuvchi";
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
+  const handleLogout = async () => {
+    await signOut();
   };
 
   return (
@@ -86,7 +86,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <div className="mt-auto p-4">
-          {!isLoggedIn ? (
+          {!user ? (
             <SidebarMenuButton asChild>
               <NavLink to="/auth" className="w-full transition-smooth hover:bg-sidebar-accent">
                 <LogIn className="h-4 w-4" />

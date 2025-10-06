@@ -1,18 +1,33 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Sparkles, Download, Wand2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/integrations/supabase/hooks/useAuth";
 
 export default function AIGenerate() {
   const [prompt, setPrompt] = useState("");
   const [generatedImage, setGeneratedImage] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   const handleGenerate = async () => {
+    if (!user) {
+      toast({
+        title: "Xatolik",
+        description: "Iltimos, avval tizimga kiring",
+        variant: "destructive",
+      });
+      navigate('/auth');
+      return;
+    }
+
     if (!prompt.trim()) {
       toast({
         title: "Xatolik",
@@ -24,22 +39,52 @@ export default function AIGenerate() {
 
     setIsGenerating(true);
 
-    // Simulate AI generation - backend integration will be added
-    setTimeout(() => {
-      // Mock: Using a random image
-      const randomId = Math.floor(Math.random() * 1000);
-      setGeneratedImage(`https://images.unsplash.com/photo-${1618005182384 + randomId}?w=800&auto=format&fit=crop`);
-      setIsGenerating(false);
-      
-      toast({
-        title: "Tayyor!",
-        description: "Rasm muvaffaqiyatli yaratildi",
+    try {
+      console.log('Calling generate-ai-image function...');
+      const { data, error } = await supabase.functions.invoke('generate-ai-image', {
+        body: { prompt }
       });
-    }, 3000);
+
+      if (error) {
+        console.error('Function error:', error);
+        throw error;
+      }
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+      if (data?.imageUrl) {
+        setGeneratedImage(data.imageUrl);
+        toast({
+          title: "Tayyor!",
+          description: "Rasm muvaffaqiyatli yaratildi",
+        });
+      } else {
+        throw new Error('Rasm yaratilmadi');
+      }
+    } catch (error: any) {
+      console.error('Error generating image:', error);
+      toast({
+        title: "Xatolik",
+        description: error.message || "Rasm yaratishda xatolik yuz berdi",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleDownload = () => {
     if (generatedImage) {
+      // Create a temporary link to download the image
+      const link = document.createElement('a');
+      link.href = generatedImage;
+      link.download = `ai-image-${Date.now()}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
       toast({
         title: "Yuklab olish",
         description: "Rasm yuklab olinmoqda...",
@@ -47,11 +92,52 @@ export default function AIGenerate() {
     }
   };
 
-  const handlePublish = () => {
-    if (generatedImage) {
+  const handlePublish = async () => {
+    if (!generatedImage || !user) return;
+
+    try {
+      // Convert base64 to blob
+      const response = await fetch(generatedImage);
+      const blob = await response.blob();
+      
+      // Upload to storage
+      const fileName = `${user.id}/${Date.now()}.png`;
+      const { error: uploadError } = await supabase.storage
+        .from('images')
+        .upload(fileName, blob);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('images')
+        .getPublicUrl(fileName);
+
+      // Save to database
+      const { error: dbError } = await supabase
+        .from('images')
+        .insert({
+          user_id: user.id,
+          title: prompt.slice(0, 100),
+          description: prompt,
+          image_url: publicUrl,
+          storage_path: fileName,
+        });
+
+      if (dbError) throw dbError;
+
       toast({
         title: "Muvaffaqiyatli!",
         description: "Rasm galereyaga joylashtirildi",
+      });
+      
+      navigate('/');
+    } catch (error: any) {
+      console.error('Error publishing image:', error);
+      toast({
+        title: "Xatolik",
+        description: "Rasmni joylashtishda xatolik yuz berdi",
+        variant: "destructive",
       });
     }
   };
@@ -99,7 +185,7 @@ export default function AIGenerate() {
                 size="lg"
                 className="w-full gradient-primary transition-smooth hover:shadow-hover"
                 onClick={handleGenerate}
-                disabled={isGenerating}
+                disabled={isGenerating || !user}
               >
                 {isGenerating ? (
                   <>
@@ -113,6 +199,12 @@ export default function AIGenerate() {
                   </>
                 )}
               </Button>
+
+              {!user && (
+                <p className="text-sm text-center text-muted-foreground">
+                  AI rasm yaratish uchun <a href="/auth" className="text-primary hover:underline">tizimga kiring</a>
+                </p>
+              )}
 
               <div className="space-y-2 rounded-lg bg-muted p-4">
                 <h3 className="text-sm font-medium">Maslahatlar:</h3>
@@ -156,6 +248,7 @@ export default function AIGenerate() {
                     <Button
                       className="w-full gradient-primary transition-smooth"
                       onClick={handlePublish}
+                      disabled={!user}
                     >
                       <Sparkles className="mr-2 h-4 w-4" />
                       Galereyaga joylash
