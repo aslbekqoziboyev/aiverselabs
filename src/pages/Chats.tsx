@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Send, ArrowLeft, User } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -45,6 +46,7 @@ export default function Chats() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Check if we need to start a chat with a specific user
   useEffect(() => {
@@ -265,6 +267,11 @@ export default function Chats() {
 
   const selectedChatData = chats.find(c => c.id === selectedChat);
 
+  // Filter chats based on search query
+  const filteredChats = chats.filter(chat =>
+    chat.other_participant.username.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   if (!user) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -291,14 +298,25 @@ export default function Chats() {
           {/* Chat list */}
           <Card className="md:col-span-1">
             <CardContent className="p-4">
-              <ScrollArea className="h-full">
+              <div className="mb-4">
+                <Input
+                  type="text"
+                  placeholder="Foydalanuvchi qidirish..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+              <ScrollArea className="h-[calc(100%-4rem)]">
                 <div className="space-y-2">
                   {loading ? (
                     <p className="text-muted-foreground">Yuklanmoqda...</p>
-                  ) : chats.length === 0 ? (
-                    <p className="text-muted-foreground">Chatlar yo'q</p>
+                  ) : filteredChats.length === 0 ? (
+                    <p className="text-muted-foreground">
+                      {searchQuery ? "Foydalanuvchi topilmadi" : "Chatlar yo'q"}
+                    </p>
                   ) : (
-                    chats.map((chat) => (
+                    filteredChats.map((chat) => (
                       <button
                         key={chat.id}
                         onClick={() => setSelectedChat(chat.id)}
