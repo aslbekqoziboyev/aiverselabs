@@ -9,6 +9,7 @@ import Gallery from "./pages/Gallery";
 import Upload from "./pages/Upload";
 import AIGenerate from "./pages/AIGenerate";
 import Chats from "./pages/Chats";
+import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -29,6 +30,7 @@ const App = () => (
                 <Route path="/upload" element={<Upload />} />
                 <Route path="/ai-generate" element={<AIGenerate />} />
                 <Route path="/chats" element={<Chats />} />
+                <Route path="/profile" element={<Profile />} />
                 <Route path="/auth" element={<Auth />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />

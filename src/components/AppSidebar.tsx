@@ -109,7 +109,7 @@ export function AppSidebar() {
               </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem className="cursor-pointer">
+                <DropdownMenuItem onClick={() => window.location.href = '/profile'} className="cursor-pointer">
                   <User className="mr-2 h-4 w-4" />
                   Profil
                 </DropdownMenuItem>
