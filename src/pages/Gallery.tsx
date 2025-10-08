@@ -122,6 +122,8 @@ export default function Gallery() {
                 title={image.title}
                 description={image.description}
                 likesCount={image.likes_count}
+                storagePath={image.storage_path}
+                onDelete={fetchImages}
               />
             ))}
           </div>

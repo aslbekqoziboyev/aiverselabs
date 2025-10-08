@@ -17,6 +17,8 @@ interface ImageCardProps {
   title: string;
   description: string | null;
   likesCount: number;
+  storagePath?: string | null;
+  onDelete?: () => void;
 }
 
 interface Comment {
@@ -36,7 +38,7 @@ interface Tag {
   } | null;
 }
 
-export function ImageCard({ id, imageUrl, author, authorId, title, description, likesCount }: ImageCardProps) {
+export function ImageCard({ id, imageUrl, author, authorId, title, description, likesCount, storagePath, onDelete }: ImageCardProps) {
   const [showComments, setShowComments] = useState(false);
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(likesCount);
@@ -262,6 +264,61 @@ export function ImageCard({ id, imageUrl, author, authorId, title, description, 
     }
   };
 
+  const handleDelete = async () => {
+    if (!user || user.id !== authorId) {
+      toast({
+        title: "Xatolik",
+        description: "Siz bu rasmni o'chira olmaysiz",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const confirmed = window.confirm("Rostdan ham bu rasmni o'chirmoqchimisiz?");
+    if (!confirmed) return;
+
+    setLoading(true);
+    try {
+      // Delete from storage if storage path exists
+      if (storagePath) {
+        const { error: storageError } = await supabase.storage
+          .from('images')
+          .remove([storagePath]);
+
+        if (storageError) {
+          console.error('Error deleting from storage:', storageError);
+        }
+      }
+
+      // Delete from database (will cascade delete likes, comments, image_tags)
+      const { error: dbError } = await supabase
+        .from('images')
+        .delete()
+        .eq('id', id);
+
+      if (dbError) throw dbError;
+
+      toast({
+        title: "Muvaffaqiyatli",
+        description: "Rasm o'chirildi",
+      });
+
+      // Call onDelete callback if provided
+      if (onDelete) {
+        onDelete();
+      }
+    } catch (error) {
+      console.error('Error deleting image:', error);
+      toast({
+        title: "Xatolik",
+        description: "Rasmni o'chirishda xatolik yuz berdi",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (showComments) {
       fetchComments();
@@ -280,17 +337,29 @@ export function ImageCard({ id, imageUrl, author, authorId, title, description, 
             </Avatar>
             <span className="text-sm font-medium">{author}</span>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleLike}
-            className="transition-smooth"
-          >
-            <Heart
-              className={`h-4 w-4 ${liked ? "fill-destructive text-destructive" : ""}`}
-            />
-            <span className="ml-1 text-xs">{likeCount}</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleLike}
+              className="transition-smooth"
+            >
+              <Heart
+                className={`h-4 w-4 ${liked ? "fill-destructive text-destructive" : ""}`}
+              />
+              <span className="ml-1 text-xs">{likeCount}</span>
+            </Button>
+            {user && user.id === authorId && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDelete}
+                className="transition-smooth"
+              >
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </Button>
+            )}
+          </div>
         </div>
       </CardHeader>
 
