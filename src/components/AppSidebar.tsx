@@ -40,6 +40,7 @@ export function AppSidebar() {
 
   const handleLogout = async () => {
     await signOut();
+    navigate('/auth');
   };
 
   return (
