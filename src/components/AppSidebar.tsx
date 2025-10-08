@@ -1,4 +1,4 @@
-import { Home, Upload, Sparkles, LogIn, LogOut, User, Image } from "lucide-react";
+import { Home, Upload, Sparkles, LogIn, LogOut, User, Image, MessageCircle } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -25,6 +25,7 @@ const menuItems = [
   { title: "Rasmlarni kuzatish", url: "/", icon: Image },
   { title: "Rasm joylash", url: "/upload", icon: Upload },
   { title: "AI'dan foydalanish", url: "/ai-generate", icon: Sparkles },
+  { title: "Chatlar", url: "/chats", icon: MessageCircle },
 ];
 
 export function AppSidebar() {

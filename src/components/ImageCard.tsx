@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Download, MessageCircle, Heart, User, Trash2 } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +40,7 @@ interface Tag {
 }
 
 export function ImageCard({ id, imageUrl, author, authorId, title, description, likesCount, storagePath, onDelete }: ImageCardProps) {
+  const navigate = useNavigate();
   const [showComments, setShowComments] = useState(false);
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(likesCount);
@@ -335,7 +337,18 @@ export function ImageCard({ id, imageUrl, author, authorId, title, description, 
                 {author.charAt(0)}
               </AvatarFallback>
             </Avatar>
-            <span className="text-sm font-medium">{author}</span>
+            <button
+              onClick={() => {
+                if (user && user.id !== authorId) {
+                  navigate('/chats', { state: { startChatWith: authorId } });
+                }
+              }}
+              className={`text-sm font-medium transition-smooth ${
+                user && user.id !== authorId ? 'hover:text-primary cursor-pointer' : ''
+              }`}
+            >
+              {author}
+            </button>
           </div>
           <div className="flex items-center gap-2">
             <Button
