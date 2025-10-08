@@ -1,5 +1,5 @@
 import { Home, Upload, Sparkles, LogIn, LogOut, User, Image, MessageCircle } from "lucide-react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -31,6 +31,7 @@ const menuItems = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, signOut } = useAuth();
 
   const isActive = (path: string) => location.pathname === path;
@@ -109,7 +110,7 @@ export function AppSidebar() {
               </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={() => window.location.href = '/profile'} className="cursor-pointer">
+                <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
                   <User className="mr-2 h-4 w-4" />
                   Profil
                 </DropdownMenuItem>
