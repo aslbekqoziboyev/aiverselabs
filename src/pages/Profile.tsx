@@ -22,11 +22,9 @@ export default function Profile() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-      return;
+    if (user) {
+      fetchProfile();
     }
-    fetchProfile();
   }, [user]);
 
   const fetchProfile = async () => {
@@ -265,7 +263,14 @@ export default function Profile() {
   };
 
   if (!user) {
-    return null;
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+          <p className="text-muted-foreground">Yuklanmoqda...</p>
+        </div>
+      </div>
+    );
   }
 
   if (loading) {
