@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, Download, Wand2 } from "lucide-react";
+import { Sparkles, Download, Wand2, ArrowRight, Zap, Palette, ImagePlus } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/integrations/supabase/hooks/useAuth";
 
 export default function AIGenerate() {
+  const [showIntro, setShowIntro] = useState(true);
   const [prompt, setPrompt] = useState("");
   const [generatedImage, setGeneratedImage] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -142,6 +143,177 @@ export default function AIGenerate() {
     }
   };
 
+  // Introduction page view
+  if (showIntro) {
+    return (
+      <div className="min-h-screen p-6">
+        <div className="mx-auto max-w-6xl space-y-12">
+          {/* Hero Section */}
+          <div className="text-center space-y-6 py-12">
+            <div className="mx-auto w-fit rounded-2xl gradient-primary p-4 shadow-glow">
+              <Sparkles className="h-16 w-16 text-white" />
+            </div>
+            <div className="space-y-4">
+              <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                AI Rasm Generatori
+              </h1>
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                Sun'iy intellekt yordamida tasavvuringizdagi rasmlarni yarating. 
+                Bir necha so'z bilan ajoyib va noyob rasmlar hosil qiling.
+              </p>
+            </div>
+            <Button 
+              size="lg" 
+              className="gradient-primary text-lg px-8 py-6 shadow-hover transition-smooth"
+              onClick={() => {
+                if (!user) {
+                  toast({
+                    title: "Xatolik",
+                    description: "Iltimos, avval tizimga kiring",
+                    variant: "destructive",
+                  });
+                  navigate('/auth');
+                  return;
+                }
+                setShowIntro(false);
+              }}
+            >
+              Boshlash
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+            {!user && (
+              <p className="text-sm text-muted-foreground">
+                AI rasm yaratish uchun <a href="/auth" className="text-primary hover:underline font-medium">tizimga kiring</a>
+              </p>
+            )}
+          </div>
+
+          {/* Features Grid */}
+          <div className="grid gap-6 md:grid-cols-3">
+            <Card className="gradient-card shadow-card border-primary/20">
+              <CardHeader>
+                <div className="mb-4 w-fit rounded-lg bg-primary/10 p-3">
+                  <Zap className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle className="text-xl">Tez va Oson</CardTitle>
+                <CardDescription className="text-base">
+                  Bir necha soniyada professional darajadagi rasmlar yarating
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card className="gradient-card shadow-card border-primary/20">
+              <CardHeader>
+                <div className="mb-4 w-fit rounded-lg bg-accent/10 p-3">
+                  <Palette className="h-6 w-6 text-accent" />
+                </div>
+                <CardTitle className="text-xl">Cheksiz Ijod</CardTitle>
+                <CardDescription className="text-base">
+                  Har qanday uslub, rang va kompozitsiyada rasm yaratish imkoniyati
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card className="gradient-card shadow-card border-primary/20">
+              <CardHeader>
+                <div className="mb-4 w-fit rounded-lg bg-primary/10 p-3">
+                  <ImagePlus className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle className="text-xl">Galereyaga Joylash</CardTitle>
+                <CardDescription className="text-base">
+                  Yaratgan rasmlaringizni to'g'ridan-to'g'ri galereyaga joylang
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </div>
+
+          {/* How it Works */}
+          <div className="space-y-6">
+            <h2 className="text-3xl font-bold text-center">Qanday Ishlaydi?</h2>
+            <div className="grid gap-6 md:grid-cols-3">
+              <div className="text-center space-y-3">
+                <div className="mx-auto w-fit rounded-full bg-primary/10 p-4">
+                  <span className="text-2xl font-bold text-primary">1</span>
+                </div>
+                <h3 className="text-lg font-semibold">Prompt Yozing</h3>
+                <p className="text-sm text-muted-foreground">
+                  Yaratmoqchi bo'lgan rasmingizni batafsil tasvirlab yozing
+                </p>
+              </div>
+
+              <div className="text-center space-y-3">
+                <div className="mx-auto w-fit rounded-full bg-accent/10 p-4">
+                  <span className="text-2xl font-bold text-accent">2</span>
+                </div>
+                <h3 className="text-lg font-semibold">AI Yaratsin</h3>
+                <p className="text-sm text-muted-foreground">
+                  Sun'iy intellekt bir necha soniyada rasmni yaratadi
+                </p>
+              </div>
+
+              <div className="text-center space-y-3">
+                <div className="mx-auto w-fit rounded-full bg-primary/10 p-4">
+                  <span className="text-2xl font-bold text-primary">3</span>
+                </div>
+                <h3 className="text-lg font-semibold">Yuklab Oling</h3>
+                <p className="text-sm text-muted-foreground">
+                  Rasmni yuklab oling yoki galereyaga joylang
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Examples */}
+          <div className="space-y-6">
+            <h2 className="text-3xl font-bold text-center">Prompt Misollari</h2>
+            <div className="grid gap-4 md:grid-cols-2">
+              <Card className="gradient-card shadow-card">
+                <CardContent className="pt-6">
+                  <p className="text-sm font-medium text-primary mb-2">Tabiat:</p>
+                  <p className="text-sm text-muted-foreground italic">
+                    "Oltin osmon ostida qadimiy shahar, kecha vaqti, yulduzlar porlayotgan, 
+                    uzoqda tog'lar ko'rinib turibdi"
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="gradient-card shadow-card">
+                <CardContent className="pt-6">
+                  <p className="text-sm font-medium text-accent mb-2">Fantastika:</p>
+                  <p className="text-sm text-muted-foreground italic">
+                    "Kelajak shahri, uchuvchi mashinalar, neon chiroqlar, 
+                    bulutlar orasida baland binolar"
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="gradient-card shadow-card">
+                <CardContent className="pt-6">
+                  <p className="text-sm font-medium text-primary mb-2">Hayvonlar:</p>
+                  <p className="text-sm text-muted-foreground italic">
+                    "Oq rangdagi mushuk, moviy ko'zlari, qor ostida o'ynayotgan, 
+                    orqa fonda qishki manzara"
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="gradient-card shadow-card">
+                <CardContent className="pt-6">
+                  <p className="text-sm font-medium text-accent mb-2">San'at:</p>
+                  <p className="text-sm text-muted-foreground italic">
+                    "Abstrakt rasm, turli xil ranglar, geometrik shakllar, 
+                    zamonaviy san'at uslubi"
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // AI Generation tool view
   return (
     <div className="min-h-screen p-6">
       <div className="mx-auto max-w-5xl space-y-8">
