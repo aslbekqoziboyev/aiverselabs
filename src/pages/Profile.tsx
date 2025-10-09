@@ -35,7 +35,7 @@ export default function Profile() {
         .from('profiles')
         .select('username, full_name, avatar_url')
         .eq('id', user!.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -43,6 +43,23 @@ export default function Profile() {
         setUsername(data.username || '');
         setFullName(data.full_name || '');
         setAvatarUrl(data.avatar_url);
+      } else {
+        // Create profile if it doesn't exist
+        const defaultUsername = user?.email?.split('@')[0] || 'user_' + user!.id.substring(0, 8);
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            id: user!.id,
+            username: defaultUsername,
+            full_name: user?.user_metadata?.full_name || user?.email || '',
+          });
+
+        if (insertError) {
+          console.error('Error creating profile:', insertError);
+        } else {
+          setUsername(defaultUsername);
+          setFullName(user?.user_metadata?.full_name || user?.email || '');
+        }
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
