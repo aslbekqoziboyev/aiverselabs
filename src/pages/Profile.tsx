@@ -30,42 +30,71 @@ export default function Profile() {
   }, [user]);
 
   const fetchProfile = async () => {
+    if (!user) {
+      console.error('No user found in fetchProfile');
+      navigate('/auth');
+      return;
+    }
+
+    console.log('Fetching profile for user:', user.id);
+    
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('username, full_name, avatar_url')
-        .eq('id', user!.id)
+        .eq('id', user.id)
         .maybeSingle();
 
-      if (error) throw error;
+      console.log('Profile fetch result:', { data, error });
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+        throw error;
+      }
 
       if (data) {
+        console.log('Profile found:', data);
         setUsername(data.username || '');
         setFullName(data.full_name || '');
         setAvatarUrl(data.avatar_url);
       } else {
         // Create profile if it doesn't exist
-        const defaultUsername = user?.email?.split('@')[0] || 'user_' + user!.id.substring(0, 8);
-        const { error: insertError } = await supabase
+        console.log('No profile found, creating new one');
+        const defaultUsername = user.email?.split('@')[0]?.replace(/[^a-zA-Z0-9_]/g, '_') || 'user_' + user.id.substring(0, 8);
+        
+        console.log('Creating profile with username:', defaultUsername);
+        
+        const { data: newProfile, error: insertError } = await supabase
           .from('profiles')
           .insert({
-            id: user!.id,
+            id: user.id,
             username: defaultUsername,
-            full_name: user?.user_metadata?.full_name || user?.email || '',
-          });
+            full_name: user.user_metadata?.full_name || user.email || '',
+          })
+          .select()
+          .single();
 
         if (insertError) {
           console.error('Error creating profile:', insertError);
+          toast({
+            title: "Xatolik",
+            description: "Profil yaratishda xatolik: " + insertError.message,
+            variant: "destructive",
+          });
         } else {
+          console.log('Profile created successfully:', newProfile);
           setUsername(defaultUsername);
-          setFullName(user?.user_metadata?.full_name || user?.email || '');
+          setFullName(user.user_metadata?.full_name || user.email || '');
+          toast({
+            title: "Muvaffaqiyatli",
+            description: "Profil yaratildi",
+          });
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching profile:', error);
       toast({
         title: "Xatolik",
-        description: "Profil ma'lumotlarini yuklashda xatolik",
+        description: "Profil ma'lumotlarini yuklashda xatolik: " + (error.message || 'Noma\'lum xatolik'),
         variant: "destructive",
       });
     } finally {
@@ -151,7 +180,10 @@ export default function Profile() {
   };
 
   const handleSaveProfile = async () => {
-    if (!user) return;
+    if (!user) {
+      console.error('No user found');
+      return;
+    }
 
     // Validate username
     if (!username.trim()) {
@@ -172,18 +204,40 @@ export default function Profile() {
       return;
     }
 
+    // Validate username format (alphanumeric and underscore only)
+    const usernameRegex = /^[a-zA-Z0-9_]+$/;
+    if (!usernameRegex.test(username)) {
+      toast({
+        title: "Xatolik",
+        description: "Foydalanuvchi nomida faqat harflar, raqamlar va pastki chiziq bo'lishi mumkin",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setSaving(true);
+    console.log('Saving profile for user:', user.id);
     try {
-      const { error } = await supabase
+      const updateData = {
+        username: username.trim().toLowerCase(),
+        full_name: fullName.trim() || null,
+      };
+      
+      console.log('Update data:', updateData);
+
+      const { data, error } = await supabase
         .from('profiles')
-        .update({
-          username: username.trim(),
-          full_name: fullName.trim() || null,
-        })
-        .eq('id', user.id);
+        .update(updateData)
+        .eq('id', user.id)
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Update error:', error);
+        throw error;
+      }
 
+      console.log('Profile updated successfully:', data);
+      
       toast({
         title: "Muvaffaqiyatli",
         description: "Profil ma'lumotlari saqlandi",
@@ -201,7 +255,7 @@ export default function Profile() {
       } else {
         toast({
           title: "Xatolik",
-          description: "Profil saqlashda xatolik yuz berdi",
+          description: error.message || "Profil saqlashda xatolik yuz berdi",
           variant: "destructive",
         });
       }
