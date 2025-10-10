@@ -20,23 +20,26 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/integrations/supabase/hooks/useAuth";
-
-const menuItems = [
-  { title: "Rasmlarni kuzatish", url: "/", icon: Image },
-  { title: "Rasm joylash", url: "/upload", icon: Upload },
-  { title: "AI'dan foydalanish", url: "/ai-generate", icon: Sparkles },
-  { title: "Chatlar", url: "/chats", icon: MessageCircle },
-];
+import { useLanguage } from "@/contexts/LanguageContext";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { t } = useLanguage();
+
+  const menuItems = [
+    { title: t('sidebar.gallery'), url: "/", icon: Image },
+    { title: t('sidebar.upload'), url: "/upload", icon: Upload },
+    { title: t('sidebar.aiGenerate'), url: "/ai-generate", icon: Sparkles },
+    { title: t('sidebar.chats'), url: "/chats", icon: MessageCircle },
+  ];
 
   const isActive = (path: string) => location.pathname === path;
   const isCollapsed = state === "collapsed";
-  const userName = user?.user_metadata?.full_name || user?.email || "Foydalanuvchi";
+  const userName = user?.user_metadata?.full_name || user?.email || t('sidebar.user');
 
   const handleLogout = async () => {
     await signOut();
@@ -54,7 +57,7 @@ export function AppSidebar() {
             {!isCollapsed && (
               <div>
                 <h1 className="text-lg font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  AI Image Connect
+                  {t('sidebar.title')}
                 </h1>
               </div>
             )}
@@ -62,7 +65,7 @@ export function AppSidebar() {
         </div>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Asosiy</SidebarGroupLabel>
+          <SidebarGroupLabel>{t('sidebar.main')}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
@@ -88,12 +91,13 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <div className="mt-auto p-4">
+        <div className="mt-auto space-y-2 p-4">
+          <LanguageSwitcher />
           {!user ? (
             <SidebarMenuButton asChild>
               <NavLink to="/auth" className="w-full transition-smooth hover:bg-sidebar-accent">
                 <LogIn className="h-4 w-4" />
-                {!isCollapsed && <span>Kirish</span>}
+                {!isCollapsed && <span>{t('sidebar.login')}</span>}
               </NavLink>
             </SidebarMenuButton>
           ) : (
@@ -113,11 +117,11 @@ export function AppSidebar() {
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
                   <User className="mr-2 h-4 w-4" />
-                  Profil
+                  {t('sidebar.profile')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive">
                   <LogOut className="mr-2 h-4 w-4" />
-                  Chiqish
+                  {t('sidebar.logout')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

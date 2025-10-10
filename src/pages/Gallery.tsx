@@ -4,6 +4,7 @@ import { ImageCard } from "@/components/ImageCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/integrations/supabase/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Image {
   id: string;
@@ -24,6 +25,7 @@ export default function Gallery() {
   const [images, setImages] = useState<Image[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const { t } = useLanguage();
 
   useEffect(() => {
     fetchImages();
@@ -88,16 +90,16 @@ export default function Gallery() {
         <div className="space-y-4">
           <div className="space-y-2">
             <h1 className="text-4xl font-bold tracking-tight">
-              Rasmlar galereyasi
+              {t('gallery.title')}
             </h1>
             <p className="text-muted-foreground">
-              AI va ijod - San'at va texnologiya uyg'unligi
+              {t('gallery.subtitle')}
             </p>
           </div>
           <SearchBar
             value={searchQuery}
             onChange={setSearchQuery}
-            placeholder="Teglar bo'yicha qidirish... (#nature, #AI, #art)"
+            placeholder={t('gallery.search')}
           />
         </div>
 
@@ -131,9 +133,9 @@ export default function Gallery() {
         ) : (
           <div className="flex min-h-[400px] items-center justify-center rounded-lg border border-dashed">
             <div className="text-center space-y-2">
-              <p className="text-lg font-medium">Hech narsa topilmadi</p>
+              <p className="text-lg font-medium">{t('gallery.notFound')}</p>
               <p className="text-sm text-muted-foreground">
-                Boshqa teglar bilan qidiring
+                {t('gallery.tryOther')}
               </p>
             </div>
           </div>
