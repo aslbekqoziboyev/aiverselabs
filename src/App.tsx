@@ -9,6 +9,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import Gallery from "./pages/Gallery";
 import Upload from "./pages/Upload";
 import AIGenerate from "./pages/AIGenerate";
+import AIMusic from "./pages/AIMusic";
 import Chats from "./pages/Chats";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
@@ -35,6 +36,7 @@ const App = () => (
                     <Route path="/" element={<Gallery />} />
                     <Route path="/upload" element={<Upload />} />
                     <Route path="/ai-generate" element={<AIGenerate />} />
+                    <Route path="/ai-music" element={<AIMusic />} />
                     <Route path="/chats" element={<Chats />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/auth" element={<Auth />} />

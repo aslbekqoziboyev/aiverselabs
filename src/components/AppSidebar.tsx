@@ -1,4 +1,4 @@
-import { Home, Upload, Sparkles, LogIn, LogOut, User, Image, MessageCircle } from "lucide-react";
+import { Home, Upload, Sparkles, LogIn, LogOut, User, Image, MessageCircle, Music } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar,
@@ -34,6 +34,7 @@ export function AppSidebar() {
     { title: t('sidebar.gallery'), url: "/", icon: Image },
     { title: t('sidebar.upload'), url: "/upload", icon: Upload },
     { title: t('sidebar.aiGenerate'), url: "/ai-generate", icon: Sparkles },
+    { title: t('sidebar.aiMusic'), url: "/ai-music", icon: Music },
     { title: t('sidebar.chats'), url: "/chats", icon: MessageCircle },
   ];
 
