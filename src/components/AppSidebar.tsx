@@ -128,7 +128,7 @@ export function AppSidebar() {
           )}
         </div>
 
-        <SidebarTrigger className="m-2 self-end" />
+        <SidebarTrigger className="m-2 self-end hidden lg:flex" />
       </SidebarContent>
     </Sidebar>
   );
