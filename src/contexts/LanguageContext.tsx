@@ -13,10 +13,10 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 const translations = {
   uz: {
     // Sidebar
-    'sidebar.title': 'AI Image Connect',
+    'sidebar.title': 'World on AI',
     'sidebar.gallery': 'Rasmlarni kuzatish',
     'sidebar.upload': 'Rasm joylash',
-    'sidebar.aiGenerate': 'AI\'dan foydalanish',
+    'sidebar.aiGenerate': 'AI Rasm',
     'sidebar.aiMusic': 'AI Musiqa',
     'sidebar.chats': 'Chatlar',
     'sidebar.login': 'Kirish',
@@ -65,10 +65,10 @@ const translations = {
   },
   ru: {
     // Sidebar
-    'sidebar.title': 'AI Image Connect',
+    'sidebar.title': 'World on AI',
     'sidebar.gallery': 'Просмотр изображений',
     'sidebar.upload': 'Загрузить изображение',
-    'sidebar.aiGenerate': 'Использовать AI',
+    'sidebar.aiGenerate': 'AI Изображение',
     'sidebar.aiMusic': 'AI Музыка',
     'sidebar.chats': 'Чаты',
     'sidebar.login': 'Войти',
@@ -117,10 +117,10 @@ const translations = {
   },
   en: {
     // Sidebar
-    'sidebar.title': 'AI Image Connect',
+    'sidebar.title': 'World on AI',
     'sidebar.gallery': 'View Images',
     'sidebar.upload': 'Upload Image',
-    'sidebar.aiGenerate': 'Use AI',
+    'sidebar.aiGenerate': 'AI Image',
     'sidebar.aiMusic': 'AI Music',
     'sidebar.chats': 'Chats',
     'sidebar.login': 'Login',
