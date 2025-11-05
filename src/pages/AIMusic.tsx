@@ -7,6 +7,7 @@ import { Music, Loader2, Download } from "lucide-react";
 import { useAuth } from "@/integrations/supabase/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const AIMusic = () => {
   const { user } = useAuth();
@@ -17,7 +18,7 @@ const AIMusic = () => {
   const [generatedMusic, setGeneratedMusic] = useState<{
     audioUrl: string;
     imageUrl: string;
-    prompt: string;
+    title: string;
   } | null>(null);
 
   const translations = {
@@ -73,19 +74,70 @@ const AIMusic = () => {
     setIsGenerating(true);
 
     try {
-      // This is a placeholder - in a real implementation, you would call an edge function
-      // that generates music using a service like Suno AI or similar
-      toast.error("Music generation service not yet configured. Please add API keys.");
+      // Generate music
+      toast.info("Musiqa yaratilmoqda, iltimos kuting...");
       
-      // Placeholder for demonstration
-      // const response = await supabase.functions.invoke('generate-music', {
-      //   body: { prompt }
-      // });
-      
-      setIsGenerating(false);
+      const { data: musicData, error: musicError } = await supabase.functions.invoke('generate-music', {
+        body: { prompt: prompt.trim() }
+      });
+
+      if (musicError) throw musicError;
+
+      // Poll for completion
+      let attempts = 0;
+      const maxAttempts = 60; // 5 minutes max
+      let musicUrl = '';
+      let musicTitle = '';
+      let albumImageUrl = '';
+
+      while (attempts < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+
+        const { data: statusData, error: statusError } = await supabase.functions.invoke('check-music-status', {
+          body: { clipIds: musicData.clipIds }
+        });
+
+        if (statusError) throw statusError;
+
+        if (statusData.status === 'complete') {
+          musicUrl = statusData.audioUrl;
+          musicTitle = statusData.title;
+          albumImageUrl = statusData.imageUrl;
+          break;
+        }
+
+        attempts++;
+        toast.info(`Musiqa yaratilmoqda... (${attempts * 5}s)`);
+      }
+
+      if (!musicUrl) {
+        throw new Error('Musiqa yaratish vaqti tugadi');
+      }
+
+      // Generate album art based on the music title/prompt
+      if (!albumImageUrl) {
+        toast.info("Albom qoplamasi yaratilmoqda...");
+        const albumPrompt = `Album cover art for a song titled "${musicTitle}". ${prompt}. Professional music album cover design, high quality, artistic.`;
+        const { data: imageData, error: imageError } = await supabase.functions.invoke('generate-ai-image', {
+          body: { prompt: albumPrompt }
+        });
+
+        if (!imageError && imageData?.imageUrl) {
+          albumImageUrl = imageData.imageUrl;
+        }
+      }
+
+      setGeneratedMusic({
+        audioUrl: musicUrl,
+        imageUrl: albumImageUrl,
+        title: musicTitle
+      });
+
+      toast.success(trans.success);
     } catch (error) {
       console.error("Error generating music:", error);
-      toast.error(trans.error);
+      toast.error(error instanceof Error ? error.message : trans.error);
+    } finally {
       setIsGenerating(false);
     }
   };
@@ -152,7 +204,7 @@ const AIMusic = () => {
                 />
               </div>
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">{generatedMusic.prompt}</p>
+                <h3 className="font-semibold text-lg">{generatedMusic.title}</h3>
                 <audio controls className="w-full">
                   <source src={generatedMusic.audioUrl} type="audio/mpeg" />
                   Your browser does not support the audio element.

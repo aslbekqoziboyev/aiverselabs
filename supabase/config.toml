@@ -1,1 +1,10 @@
 project_id = "ixuhdlpclbpsyxtmlqdk"
+
+[functions.generate-ai-image]
+verify_jwt = false
+
+[functions.generate-music]
+verify_jwt = false
+
+[functions.check-music-status]
+verify_jwt = false
