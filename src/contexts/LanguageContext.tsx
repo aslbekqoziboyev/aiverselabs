@@ -18,6 +18,7 @@ const translations = {
     'sidebar.upload': 'Rasm joylash',
     'sidebar.aiGenerate': 'AI Rasm',
     'sidebar.aiMusic': 'AI Musiqa',
+    'sidebar.aiVideo': 'AI Video',
     'sidebar.chats': 'Chatlar',
     'sidebar.login': 'Kirish',
     'sidebar.profile': 'Profil',
@@ -62,6 +63,14 @@ const translations = {
     'auth.password': 'Parol',
     'auth.fullName': 'To\'liq ism',
     'auth.username': 'Foydalanuvchi nomi',
+    
+    // AI Video
+    'aiVideo.title': 'AI Video Yaratish',
+    'aiVideo.description': 'AI yordamida professional video yarating',
+    'aiVideo.promptPlaceholder': 'Video uchun tavsif kiriting...',
+    'aiVideo.generateButton': 'Video Yaratish',
+    'aiVideo.generating': 'Video yaratilmoqda...',
+    'aiVideo.download': 'Videoni yuklab olish',
   },
   ru: {
     // Sidebar
@@ -70,6 +79,7 @@ const translations = {
     'sidebar.upload': 'Загрузить изображение',
     'sidebar.aiGenerate': 'AI Изображение',
     'sidebar.aiMusic': 'AI Музыка',
+    'sidebar.aiVideo': 'AI Видео',
     'sidebar.chats': 'Чаты',
     'sidebar.login': 'Войти',
     'sidebar.profile': 'Профиль',
@@ -114,6 +124,14 @@ const translations = {
     'auth.password': 'Пароль',
     'auth.fullName': 'Полное имя',
     'auth.username': 'Имя пользователя',
+    
+    // AI Video
+    'aiVideo.title': 'Создание AI Видео',
+    'aiVideo.description': 'Создавайте профессиональные видео с помощью AI',
+    'aiVideo.promptPlaceholder': 'Введите описание для видео...',
+    'aiVideo.generateButton': 'Создать Видео',
+    'aiVideo.generating': 'Создание видео...',
+    'aiVideo.download': 'Скачать видео',
   },
   en: {
     // Sidebar
@@ -122,6 +140,7 @@ const translations = {
     'sidebar.upload': 'Upload Image',
     'sidebar.aiGenerate': 'AI Image',
     'sidebar.aiMusic': 'AI Music',
+    'sidebar.aiVideo': 'AI Video',
     'sidebar.chats': 'Chats',
     'sidebar.login': 'Login',
     'sidebar.profile': 'Profile',
@@ -166,6 +185,14 @@ const translations = {
     'auth.password': 'Password',
     'auth.fullName': 'Full Name',
     'auth.username': 'Username',
+    
+    // AI Video
+    'aiVideo.title': 'AI Video Generation',
+    'aiVideo.description': 'Create professional videos with AI',
+    'aiVideo.promptPlaceholder': 'Enter video description...',
+    'aiVideo.generateButton': 'Generate Video',
+    'aiVideo.generating': 'Generating video...',
+    'aiVideo.download': 'Download video',
   },
 };
 
