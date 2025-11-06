@@ -245,6 +245,142 @@ export type Database = {
           },
         ]
       }
+      music: {
+        Row: {
+          audio_url: string
+          created_at: string
+          description: string | null
+          duration: number | null
+          id: string
+          likes_count: number | null
+          prompt: string | null
+          storage_path: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          audio_url: string
+          created_at?: string
+          description?: string | null
+          duration?: number | null
+          id?: string
+          likes_count?: number | null
+          prompt?: string | null
+          storage_path?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          audio_url?: string
+          created_at?: string
+          description?: string | null
+          duration?: number | null
+          id?: string
+          likes_count?: number | null
+          prompt?: string | null
+          storage_path?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      music_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          music_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          music_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          music_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_comments_music_id_fkey"
+            columns: ["music_id"]
+            isOneToOne: false
+            referencedRelation: "music"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_likes: {
+        Row: {
+          created_at: string
+          id: string
+          music_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          music_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          music_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_likes_music_id_fkey"
+            columns: ["music_id"]
+            isOneToOne: false
+            referencedRelation: "music"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      music_tags: {
+        Row: {
+          created_at: string
+          id: string
+          music_id: string
+          tag_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          music_id: string
+          tag_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          music_id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_tags_music_id_fkey"
+            columns: ["music_id"]
+            isOneToOne: false
+            referencedRelation: "music"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "music_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
