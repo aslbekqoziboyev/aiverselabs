@@ -17,9 +17,12 @@ serve(async (req) => {
 
     const SUNO_API_KEY = Deno.env.get('SUNO_API_KEY');
     if (!SUNO_API_KEY) {
+      console.error('SUNO_API_KEY is not configured');
       throw new Error('SUNO_API_KEY is not configured');
     }
 
+    console.log('Calling Suno API...');
+    
     // Create music generation request
     const response = await fetch('https://studio-api.suno.ai/api/external/generate/', {
       method: 'POST',
@@ -34,14 +37,16 @@ serve(async (req) => {
       }),
     });
 
+    console.log('Suno API response status:', response.status);
+
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Suno API error:', response.status, errorText);
-      throw new Error(`Suno API error: ${response.status}`);
+      console.error('Suno API error response:', response.status, errorText);
+      throw new Error(`Suno API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
-    console.log('Music generation started:', data);
+    console.log('Music generation started successfully:', data);
     
     // Return the clip IDs to poll for completion
     const clipIds = data.map((clip: any) => clip.id);

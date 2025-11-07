@@ -17,11 +17,14 @@ serve(async (req) => {
 
     const SUNO_API_KEY = Deno.env.get('SUNO_API_KEY');
     if (!SUNO_API_KEY) {
+      console.error('SUNO_API_KEY is not configured');
       throw new Error('SUNO_API_KEY is not configured');
     }
 
     // Check status of all clips
     const clipId = clipIds[0]; // Get first clip
+    console.log('Checking clip ID:', clipId);
+    
     const response = await fetch(`https://studio-api.suno.ai/api/external/clips/?ids=${clipId}`, {
       method: 'GET',
       headers: {
@@ -29,14 +32,16 @@ serve(async (req) => {
       },
     });
 
+    console.log('Suno API status check response:', response.status);
+
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Suno API error:', response.status, errorText);
-      throw new Error(`Suno API error: ${response.status}`);
+      console.error('Suno API error response:', response.status, errorText);
+      throw new Error(`Suno API error: ${response.status} - ${errorText}`);
     }
 
     const clips = await response.json();
-    console.log('Clip status:', clips);
+    console.log('Clip status response:', clips);
     
     const clip = clips[0];
     
