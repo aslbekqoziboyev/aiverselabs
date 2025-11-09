@@ -23,11 +23,11 @@ serve(async (req) => {
 
     console.log('Calling Suno API...');
     
-    // Create music generation request
-    const response = await fetch('https://studio-api.suno.ai/api/external/generate/', {
+    // Create music generation request using SunoAPI.org
+    const response = await fetch('https://api.sunoapi.org/api/generate', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${SUNO_API_KEY}`,
+        'api-key': SUNO_API_KEY,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({

@@ -21,14 +21,14 @@ serve(async (req) => {
       throw new Error('SUNO_API_KEY is not configured');
     }
 
-    // Check status of all clips
+    // Check status of all clips using SunoAPI.org
     const clipId = clipIds[0]; // Get first clip
     console.log('Checking clip ID:', clipId);
     
-    const response = await fetch(`https://studio-api.suno.ai/api/external/clips/?ids=${clipId}`, {
+    const response = await fetch(`https://api.sunoapi.org/api/get?ids=${clipId}`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${SUNO_API_KEY}`,
+        'api-key': SUNO_API_KEY,
       },
     });
 
