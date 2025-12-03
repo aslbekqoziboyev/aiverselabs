@@ -118,11 +118,17 @@ export function MusicCard({
   };
 
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-lg">
-      <div className="relative aspect-square bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-        <Music2 className="h-24 w-24 text-primary/40" />
+    <Card className="overflow-hidden transition-all hover:shadow-lg cursor-pointer group">
+      <div 
+        className="relative aspect-square bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center"
+        onClick={() => navigate(`/music/${id}`)}
+      >
+        <Music2 className="h-24 w-24 text-primary/40 group-hover:scale-110 transition-transform" />
         <Button
-          onClick={togglePlay}
+          onClick={(e) => {
+            e.stopPropagation();
+            togglePlay();
+          }}
           className="absolute gradient-primary rounded-full h-16 w-16"
           size="icon"
         >
