@@ -11,6 +11,7 @@ import Upload from "./pages/Upload";
 import AIGenerate from "./pages/AIGenerate";
 import AIMusic from "./pages/AIMusic";
 import MyMusic from "./pages/MyMusic";
+import MusicDetail from "./pages/MusicDetail";
 import AIVideo from "./pages/AIVideo";
 import Chats from "./pages/Chats";
 import Profile from "./pages/Profile";
@@ -40,6 +41,7 @@ const App = () => (
                     <Route path="/ai-generate" element={<AIGenerate />} />
                     <Route path="/ai-music" element={<AIMusic />} />
                     <Route path="/my-music" element={<MyMusic />} />
+                    <Route path="/music/:id" element={<MusicDetail />} />
                     <Route path="/ai-video" element={<AIVideo />} />
                     <Route path="/chats" element={<Chats />} />
                     <Route path="/profile" element={<Profile />} />
