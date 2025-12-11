@@ -1,4 +1,4 @@
-import { Home, Upload, Sparkles, LogIn, LogOut, User, Image, MessageCircle, Music, Video, ListMusic } from "lucide-react";
+import { Home, Upload, Sparkles, LogIn, LogOut, User, Image, MessageCircle, Music, Video, ListMusic, Shield } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar,
@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/integrations/supabase/hooks/useAuth";
+import { useAdmin } from "@/hooks/useAdmin";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
@@ -28,6 +29,7 @@ export function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { isAdmin } = useAdmin();
   const { t } = useLanguage();
 
   const menuItems = [
@@ -38,6 +40,7 @@ export function AppSidebar() {
     { title: "Mening Musiqalarim", url: "/my-music", icon: ListMusic },
     { title: t('sidebar.aiVideo'), url: "/ai-video", icon: Video },
     { title: t('sidebar.chats'), url: "/chats", icon: MessageCircle },
+    ...(isAdmin ? [{ title: "Admin Panel", url: "/admin", icon: Shield }] : []),
   ];
 
   const isActive = (path: string) => location.pathname === path;

@@ -16,6 +16,7 @@ import AIVideo from "./pages/AIVideo";
 import Chats from "./pages/Chats";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
+import AdminPanel from "./pages/AdminPanel";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ const App = () => (
                     <Route path="/chats" element={<Chats />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/auth" element={<Auth />} />
+                    <Route path="/admin" element={<AdminPanel />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
